@@ -11,10 +11,14 @@ export default (base, target) => {
         resLength = Math.max(base.length, target.length),
         res = new Array(resLength);
   for (let i = 0; i < resLength; i++) {
-    if (i in common) res[i] = generators.noop(common[i], common[i]);
-    else if (i in additions && i in deletions) res[i] = generators.replace(deletions[i], additions[i]);
-    else if (i in additions) res[i] = generators.add(undefined, additions[i]);
-    else if (i in deletions) res[i] = generators.remove(deletions[i], undefined);
+    if (i in common)
+      res[i] = generators.noop(common[i], common[i]);
+    else if (i in additions && i in deletions)
+      res[i] = generators.recurse(deletions[i], additions[i]);
+    else if (i in additions)
+      res[i] = generators.add(undefined, additions[i]);
+    else if (i in deletions)
+      res[i] = generators.remove(deletions[i], undefined);
     res[i].path = new Array(resLength);
     res[i].path[i] = {};
   }
