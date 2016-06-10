@@ -29,8 +29,7 @@ class Memory {
 const longest = (a1, a2) => maxBy([a1, a2], a => a.length);
 
 const lcs = (a1, a2, mem) => {
-  mem = mem || new Memory(a1.length - 1, a2.length - 1);
-  // length-1 because we never use (0,0).
+  mem = mem || new Memory(a1.length, a2.length);
   if (!a1.length || !a2.length) return [];
   if (a1[a1.length - 1] === a2[a2.length - 1]) return mem.getOrSet(
     a1.length - 1,
