@@ -10,8 +10,7 @@ const concatPaths = (p1, p2) => {
       }
     }
   }
-  Object.assign(p1, p2);
-  return p1;
+  return p2;
 }
 
 export default concatPaths;
