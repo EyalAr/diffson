@@ -1,7 +1,7 @@
 import "should";
 import initCalc from "../../src/calcs/init";
 
-describe("initCalc", () => {
+describe("init calc", () => {
   it("should generate a 'remove' delta when target is undefined", () => {
     var deltas = initCalc(
       { a: { b: {} } },
@@ -36,6 +36,44 @@ describe("initCalc", () => {
     );
     deltas.should.have.length(1);
     deltas[0].action.should.be.equal("add");
+  });
+
+  it("should generate a 'noop' delta when base and target are equal", () => {
+    var deltas = initCalc(
+      1,
+      1
+    );
+    deltas.should.have.length(1);
+    deltas[0].action.should.be.equal("noop");
+
+    deltas = initCalc(
+      false,
+      false
+    );
+    deltas.should.have.length(1);
+    deltas[0].action.should.be.equal("noop");
+
+    deltas = initCalc(
+      null,
+      null
+    );
+    deltas.should.have.length(1);
+    deltas[0].action.should.be.equal("noop");
+
+    deltas = initCalc(
+      "abc",
+      "abc"
+    );
+    deltas.should.have.length(1);
+    deltas[0].action.should.be.equal("noop");
+
+    var o = {};
+    deltas = initCalc(
+      o,
+      o
+    );
+    deltas.should.have.length(1);
+    deltas[0].action.should.be.equal("noop");
   });
 
   it("should generate a 'replace' delta when base and target are primitives", () => {
