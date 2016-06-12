@@ -74,4 +74,56 @@ describe("arrays calc", () => {
     deltas[2].action.should.be.equal("noop");
     deltas[2].path.should.be.deepEqual([,,{}]);
   });
+
+  it("should generate one 'replace' delta and the rest 'noop' deltas when one primitive element is changed in the array", () => {
+    var deltas = arraysCalc(
+      [1,2,3],
+      [8,2,3]
+    );
+    deltas.should.have.length(3);
+    deltas[0].action.should.be.equal("replace");
+    deltas[0].path.should.be.deepEqual([{},,,]);
+    deltas[1].action.should.be.equal("noop");
+    deltas[1].path.should.be.deepEqual([,{},,]);
+    deltas[2].action.should.be.equal("noop");
+    deltas[2].path.should.be.deepEqual([,,{}]);
+
+    deltas = arraysCalc(
+      [1,2,3],
+      [1,8,3]
+    );
+    deltas.should.have.length(3);
+    deltas[0].action.should.be.equal("noop");
+    deltas[0].path.should.be.deepEqual([{},,,]);
+    deltas[1].action.should.be.equal("replace");
+    deltas[1].path.should.be.deepEqual([,{},,]);
+    deltas[2].action.should.be.equal("noop");
+    deltas[2].path.should.be.deepEqual([,,{}]);
+  });
+
+  it("should generate one 'recurse' delta and the rest 'noop' deltas when one complex element is changed in the array", () => {
+    var deltas = arraysCalc(
+      [{a:"a"},2,3],
+      [{a:"b"},2,3]
+    );
+    deltas.should.have.length(3);
+    deltas[0].action.should.be.equal("recurse");
+    deltas[0].path.should.be.deepEqual([{},,,]);
+    deltas[1].action.should.be.equal("noop");
+    deltas[1].path.should.be.deepEqual([,{},,]);
+    deltas[2].action.should.be.equal("noop");
+    deltas[2].path.should.be.deepEqual([,,{}]);
+
+    deltas = arraysCalc(
+      [1,{a:"a"},3],
+      [1,{a:"b"},3]
+    );
+    deltas.should.have.length(3);
+    deltas[0].action.should.be.equal("noop");
+    deltas[0].path.should.be.deepEqual([{},,,]);
+    deltas[1].action.should.be.equal("recurse");
+    deltas[1].path.should.be.deepEqual([,{},,]);
+    deltas[2].action.should.be.equal("noop");
+    deltas[2].path.should.be.deepEqual([,,{}]);
+  });
 });

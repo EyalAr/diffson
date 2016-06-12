@@ -1,13 +1,7 @@
-import { isPlainObject, isArray, isUndefined } from "lodash"
+import { isUndefined } from "lodash"
 import generators from "../generators";
 import isEqual from "../utils/isEqual";
-
-const ofSameComplexType = (base, target) => {
-  return (
-    (isPlainObject(base) && isPlainObject(target)) ||
-    (isArray(base) && isArray(target))
-  );
-}
+import ofSameComplexType from "../utils/ofSameComplexType";
 
 export default (base, target) => {
   if (isUndefined(target)) return [generators.remove(base, target)];

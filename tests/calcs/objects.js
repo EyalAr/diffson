@@ -71,8 +71,8 @@ describe("objects calc", () => {
 
   it("should generate a 'recurse' delta when base and target are of same complex type in first level path", () => {
     var deltas = objectsCalc(
-      { a: {} },
-      { a: {} }
+      { a: { a: "a" } },
+      { a: { a: "b" } }
     );
     deltas.should.have.length(1);
     deltas[0].action.should.be.equal("recurse");

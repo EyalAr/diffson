@@ -130,37 +130,9 @@ describe("init calc", () => {
     deltas.should.have.length(1);
     deltas[0].action.should.be.equal("recurse");
 
-    var deltas = initCalc(
-      {},
-      {}
-    );
-    deltas.should.have.length(1);
-    deltas[0].action.should.be.equal("recurse");
-
-    deltas = initCalc(
-      { a: { b: {} } },
-      { a: { b: {} } }
-    );
-    deltas.should.have.length(1);
-    deltas[0].action.should.be.equal("recurse");
-
     deltas = initCalc(
       [1,2],
       [1,2,3]
-    );
-    deltas.should.have.length(1);
-    deltas[0].action.should.be.equal("recurse");
-
-    deltas = initCalc(
-      [1,2,3],
-      [1,2,3]
-    );
-    deltas.should.have.length(1);
-    deltas[0].action.should.be.equal("recurse");
-
-    deltas = initCalc(
-      [],
-      []
     );
     deltas.should.have.length(1);
     deltas[0].action.should.be.equal("recurse");

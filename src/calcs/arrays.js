@@ -2,6 +2,7 @@ import { isArray, difference } from "lodash";
 import generators from "../generators";
 import lcs from "../utils/lcs";
 import expandPartialArray from "../utils/expandPartialArray";
+import ofSameComplexType from "../utils/ofSameComplexType";
 
 export default (base, target) => {
   if (!isArray(base) || !isArray(target)) return false;
@@ -18,7 +19,11 @@ export default (base, target) => {
       res.push(generators.noop(commonExp[i], commonExp[i]));
       j++;
     } else if (j in additionsExp && i in deletionsExp) {
-      res.push(generators.recurse(deletionsExp[i], additionsExp[j]));
+      if (ofSameComplexType(deletionsExp[i], additionsExp[j])) {
+        res.push(generators.recurse(deletionsExp[i], additionsExp[j]));
+      } else {
+        res.push(generators.replace(deletionsExp[i], additionsExp[j]));
+      }
       j++;
     } else if (j in additionsExp) {
       res.push(generators.add(undefined, additionsExp[j]));
