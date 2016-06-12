@@ -5,22 +5,34 @@ import expandPartialArray from "../utils/expandPartialArray";
 
 export default (base, target) => {
   if (!isArray(base) || !isArray(target)) return false;
-  const common = expandPartialArray(base, lcs(base, target)),
-        deletions = expandPartialArray(base, difference(base, common)),
-        additions = expandPartialArray(target, difference(target, common)),
-        resLength = Math.max(base.length, target.length),
-        res = new Array(resLength);
-  for (let i = 0; i < resLength; i++) {
-    if (i in common)
-      res[i] = generators.noop(common[i], common[i]);
-    else if (i in additions && i in deletions)
-      res[i] = generators.recurse(deletions[i], additions[i]);
-    else if (i in additions)
-      res[i] = generators.add(undefined, additions[i]);
-    else if (i in deletions)
-      res[i] = generators.remove(deletions[i], undefined);
-    res[i].path = new Array(resLength);
-    res[i].path[i] = {};
+  const common = lcs(base, target),
+        deletions = difference(base, common),
+        additions = difference(target, common),
+        commonExp = expandPartialArray(base, common),
+        deletionsExp = expandPartialArray(base, deletions),
+        additionsExp = expandPartialArray(target, additions),
+        res = [];
+  var i = 0, j = 0;
+  for (; i < base.length; i++) {
+    if (i in commonExp) {
+      res.push(generators.noop(commonExp[i], commonExp[i]));
+      j++;
+    } else if (j in additionsExp && i in deletionsExp) {
+      res.push(generators.recurse(deletionsExp[i], additionsExp[j]));
+      j++;
+    } else if (j in additionsExp) {
+      res.push(generators.add(undefined, additionsExp[j]));
+      j++;
+    } else if (i in deletionsExp) {
+      res.push(generators.remove(deletionsExp[i], undefined));
+    }
   }
-  return res;
+  for (; j < target.length; j++) {
+    res.push(generators.add(undefined, additionsExp[j]));
+  }
+  return res.map((r, i) => {
+    r.path = new Array(res.length);
+    r.path[i] = {};
+    return r;
+  });
 }

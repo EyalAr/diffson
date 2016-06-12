@@ -1,4 +1,5 @@
 import { maxBy } from "lodash";
+import isEqual from "./isEqual";
 
 class Memory {
   constructor(n, m) {
@@ -31,7 +32,7 @@ const longest = (a1, a2) => maxBy([a1, a2], a => a.length);
 const lcs = (a1, a2, mem) => {
   mem = mem || new Memory(a1.length, a2.length);
   if (!a1.length || !a2.length) return [];
-  if (a1[a1.length - 1] === a2[a2.length - 1]) return mem.getOrSet(
+  if (isEqual(a1[a1.length - 1], a2[a2.length - 1])) return mem.getOrSet(
     a1.length - 1,
     a2.length - 1,
     () => lcs(a1.slice(0, -1), a2.slice(0, -1), mem)

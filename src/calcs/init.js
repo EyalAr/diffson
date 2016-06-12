@@ -1,5 +1,6 @@
-import { isPlainObject, isArray } from "lodash"
+import { isPlainObject, isArray, isUndefined } from "lodash"
 import generators from "../generators";
+import isEqual from "../utils/isEqual";
 
 const ofSameComplexType = (base, target) => {
   return (
@@ -9,9 +10,9 @@ const ofSameComplexType = (base, target) => {
 }
 
 export default (base, target) => {
-  if (target === undefined) return [generators.remove(base, target)];
-  if (base === undefined) return [generators.add(base, target)];
-  if (base === target) return [generators.noop(base, target)];
+  if (isUndefined(target)) return [generators.remove(base, target)];
+  if (isUndefined(base)) return [generators.add(base, target)];
+  if (isEqual(base, target)) return [generators.noop(base, target)];
   if (ofSameComplexType(base, target)) return [generators.recurse(base, target)];
   return [generators.replace(base, target)];
 }
