@@ -1,6 +1,5 @@
-import { isUndefined } from "lodash"
+import { isUndefined, isEqual } from "lodash"
 import generators from "../generators";
-import isEqual from "../utils/isEqual";
 import ofSameComplexType from "../utils/ofSameComplexType";
 
 export default (base, target) => {

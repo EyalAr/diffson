@@ -1,58 +1,83 @@
-import { isArray, difference } from "lodash";
+import { isArray, differenceWith, isEqual, reduce, forEach } from "lodash";
 import generators from "../generators";
 import lcs from "../utils/lcs";
-import expandPartialArray from "../utils/expandPartialArray";
 import ofSameComplexType from "../utils/ofSameComplexType";
+
+const optimize = (res, len) => {
+  const ores = {};
+  for (let i = 0; i < len; i++) {
+    const val = res[i];
+    if (!val) continue;
+    if (val.length === 1 || val[0].action === "noop") {
+      ores[i] = val;
+      continue;
+    }
+    const removedVal = val[0].details.val,
+          addedVal = val[1].details.val;
+    if (ofSameComplexType(removedVal, addedVal)) {
+      ores[i] = val;
+      continue;
+    }
+    const nextVal = res[i + 1];
+    if (
+      nextVal && nextVal.length === 1 && nextVal[0].action === "remove" &&
+      ofSameComplexType(addedVal, nextVal[0].details.val)
+    ) {
+      // it makes more sense to shift the addition to the next index
+      // if it's going to be substituted with a "recurse" action along
+      // with the next element's removal (if they are of the same complex type)
+      nextVal.push(val.pop());
+    }
+    ores[i] = val;
+  }
+  return ores;
+}
 
 export default (base, target) => {
   if (!isArray(base) || !isArray(target)) return false;
-  const res = [];
-  var common = lcs(base, target),
-      // 'common' holds fixed elements which are both in base and target
-      deletions = difference(base, common),
-      // 'deletions' holds elements which are in 'base' but not in 'target'.
-      additions = difference(target, common);
-      // 'additions' holds elements which are in 'target' but not in 'base'.
-  // all of the above arrays are subsequences of a larger array.
-  // expand these arrays to be of the same size as the larger array,
-  // by making them sparse arrays with gaps.
-  common = expandPartialArray(base, common);
-  deletions = expandPartialArray(base, deletions);
-  additions = expandPartialArray(target, additions);
-  var i = 0, // 'base' iterator
-      j = 0; // 'target' iterator
-  for (; i < base.length; i++) {
-    // for each element in the base array, we need to determine what happens
-    // to it in the target array.
-    if (i in common) {
-      // this element exists both in base and in target.
-      res.push(generators.noop(common[i], common[i]));
-      j++;
-    } else if (i in deletions && j in additions) {
-      // this element was removed in 'base', but another was added in 'target'
-      // at the same positions
-      if (ofSameComplexType(deletions[i], additions[j])) {
-        res.push(generators.recurse(deletions[i], additions[j]));
-      } else {
-        res.push(generators.replace(deletions[i], additions[j]));
-      }
-      j++;
-    } else if (j in additions) {
-      res.push(generators.add(undefined, additions[j]));
-      j++;
-    } else if (i in deletions) {
-      res.push(generators.remove(deletions[i], undefined));
+
+  var res = {};
+  const common = lcs(base, target, isEqual);
+
+  for (let i = 0, k = 0; i < base.length; i++) {
+    // for each element in the base array, we need to determine if it's removed
+    // or not.
+    if (!common.equalsAtA1(k, base[i])) {
+      res[i] = [ generators.remove(base[i], undefined) ];
+    } else {
+      res[i] = [ generators.noop(base[i], undefined) ];
+      k++;
     }
   }
-  // if there are still elements remaining in 'target' which we didn't account
-  // for, they must be additions:
-  for (; j < target.length; j++) {
-    res.push(generators.add(undefined, additions[j]));
+
+  for (let i = 0, k = 0; i < target.length; i++) {
+    // for each element in the target array, we need to determine if it's added
+    // or not.
+    if (!common.equalsAtA2(k, target[i])) {
+      res[i] = res[i] || [];
+      res[i].push(generators.add(undefined, target[i]));
+    } else {
+      k++;
+    }
   }
 
-  return res.map((r, i) => {
-    r.path = new Array(res.length);
-    r.path[i] = {};
-    return r;
-  });
+  res = optimize(res, Math.max(base.length, target.length));
+
+  res = reduce(res, (acc, val, key) => {
+    if (val.length === 1) {
+      val = val[0];
+    } else if (val[0].action === "noop") {
+      val = val[1];
+    } else if (ofSameComplexType(val[0].details.val, val[1].details.val)) {
+      val = generators.recurse(val[0].details.val, val[1].details.val);
+    } else {
+      val = generators.replace(val[0].details.val, val[1].details.val);
+    }
+    val.path = new Array(+key);
+    val.path[key] = {};
+    acc.push(val);
+    return acc;
+  }, []);
+
+  return res;
 }
