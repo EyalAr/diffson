@@ -63,6 +63,7 @@ export default (base, target) => {
 
   res = optimize(res, Math.max(base.length, target.length));
 
+  var indexShift = 0;
   res = reduce(res, (acc, val, key) => {
     if (val.length === 1) {
       val = val[0];
@@ -73,9 +74,12 @@ export default (base, target) => {
     } else {
       val = generators.replace(val[0].details.val, val[1].details.val);
     }
-    val.path = new Array(+key);
-    val.path[key] = {};
+    var index = +key + indexShift;
+    val.path = new Array(index);
+    val.path[index] = {};
     acc.push(val);
+    if (val.action === "remove") indexShift--;
+    else if (val.action === "add") indexShift++;
     return acc;
   }, []);
 
